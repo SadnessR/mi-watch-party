@@ -168,29 +168,21 @@ function cargarArchivo(event) {
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-
   import {
-    getDatabase,
-    ref,
-    onValue
+    getDatabase, ref, onValue, set
   } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
-
   import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    onAuthStateChanged
+    getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
   const firebaseConfig = {
-    apiKey: "AIzaSyDZq0EfZNPCn_gTJIu61pxAGRDpOYvDvkA",
+    apiKey: "TU_API_KEY",
     authDomain: "mi-watch-party.firebaseapp.com",
     databaseURL: "https://mi-watch-party-default-rtdb.firebaseio.com",
     projectId: "mi-watch-party",
     storageBucket: "mi-watch-party.firebasestorage.app",
     messagingSenderId: "854788364639",
-    appId: "1:854788364639:web:74f134423e5d3142b6beea",
-    measurementId: "G-C9W5RK9RFD"
+    appId: "TU_APP_ID"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -200,39 +192,72 @@ function cargarArchivo(event) {
 
   const loginButton = document.getElementById("loginAdmin");
   const status = document.getElementById("adminStatus");
+  const videoUrl = document.getElementById("videoUrl");
+  const videoFrame = document.getElementById("videoFrame");
 
-  if (loginButton && status) {
-    loginButton.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        console.error("Error al iniciar sesión:", error);
-        alert("No se pudo iniciar sesión: " + error.message);
-      }
-    });
+  // IMPORTANTE: completar con el UID de tu cuenta de Google,
+  // que aparece en la consola después de iniciar sesión.
+  const ADMIN_UID = "PEGAR_AQUI_TU_UID";
 
-    onAuthStateChanged(auth, (user) => {
-      status.textContent = user
-        ? "Sesión iniciada: " + (user.email || "Administrador")
-        : "Modo espectador";
+  let soyAdmin = false;
+  let actualizandoDesdeFirebase = false;
 
-      if (user) {
-        console.log("UID de la cuenta:", user.uid);
-      }
-    });
-  }
-
-  const estadoRef = ref(db, "watchparty");
-
-  onValue(
-    estadoRef,
-    (snapshot) => {
-      console.log("Estado compartido:", snapshot.val());
-    },
-    (error) => {
-      console.error("Error al leer Firebase:", error.message);
+  loginButton.addEventListener("click", async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error(error);
+      alert("Error al iniciar sesión: " + error.message);
     }
-  );
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    soyAdmin = !!user && user.uid === ADMIN_UID;
+
+    status.textContent = !user
+      ? "Modo espectador"
+      : soyAdmin
+        ? "Administrador"
+        : "Sesión iniciada sin permisos de administrador";
+
+    videoUrl.disabled = !soyAdmin;
+    document.querySelector('button[onclick="cargarVideo()"]').disabled = !soyAdmin;
+  });
+
+  // El administrador guarda el enlace compartido.
+  window.cargarVideo = async function () {
+    const enlace = videoUrl.value.trim();
+
+    if (!soyAdmin) {
+      alert("Solo el administrador puede cambiar el video.");
+      return;
+    }
+
+    try {
+      const url = new URL(enlace);
+      if (!["https:", "http:"].includes(url.protocol)) {
+        throw new Error("Enlace no válido");
+      }
+
+      await set(ref(db, "watchparty/videoUrl"), url.href);
+    } catch (error) {
+      alert("No se pudo guardar el enlace. Revisá la URL y las reglas de Firebase.");
+      console.error(error);
+    }
+  };
+
+  // Todos reciben el enlace actualizado.
+  onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
+    const enlace = snapshot.val();
+    if (!enlace) return;
+
+    actualizandoDesdeFirebase = true;
+    videoUrl.value = enlace;
+    videoFrame.src = enlace;
+    actualizandoDesdeFirebase = false;
+  }, (error) => {
+    console.error("Error al leer Firebase:", error.message);
+  });
 </script>
 </body>
 </html>
