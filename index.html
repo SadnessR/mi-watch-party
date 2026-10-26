@@ -74,7 +74,16 @@
     style="display:block; margin-top:8px; max-width:100%;"
   >
 </div>
-<div class="player-wrap" id="player">
+<div style="margin: 12px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+  <button id="loginAdmin"
+    style="padding:10px 14px; border:0; border-radius:8px; background:#53FC18; color:#111; font-weight:bold; cursor:pointer;">
+    Iniciar sesión como administrador
+  </button>
+  <span id="adminStatus" style="color:white;">
+    Modo espectador
+  </span>
+</div>
+  <div class="player-wrap" id="player">
   <iframe
     id="videoFrame"
     src="https://animeflv.or.at/2026/09/02/rezero-kara-hajimeru-isekai-seikatsu-4th-season-episodio-15/"
@@ -159,11 +168,19 @@ function cargarArchivo(event) {
 </script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+
   import {
     getDatabase,
     ref,
     onValue
   } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
   const firebaseConfig = {
     <script type="module">
@@ -194,12 +211,33 @@ function cargarArchivo(event) {
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  document.getElementById("loginAdmin").addEventListener("click", async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error(error);
+      alert("No se pudo iniciar sesión: " + error.message);
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    const status = document.getElementById("adminStatus");
+
+    if (user) {
+      status.textContent = "Sesión iniciada: " + user.email;
+      console.log("UID de administrador:", user.uid);
+    } else {
+      status.textContent = "Modo espectador";
+    }
+  });
 
   const estadoRef = ref(db, "watchparty");
 
   onValue(estadoRef, (snapshot) => {
     const estado = snapshot.val();
-
     if (!estado) return;
 
     console.log("Estado compartido recibido:", estado);
