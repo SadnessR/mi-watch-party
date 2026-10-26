@@ -183,16 +183,6 @@ function cargarArchivo(event) {
   } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
   const firebaseConfig = {
-    <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
     apiKey: "AIzaSyDZq0EfZNPCn_gTJIu61pxAGRDpOYvDvkA",
     authDomain: "mi-watch-party.firebaseapp.com",
     databaseURL: "https://mi-watch-party-default-rtdb.firebaseio.com",
@@ -203,45 +193,46 @@ function cargarArchivo(event) {
     measurementId: "G-C9W5RK9RFD"
   };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-  };
-
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
 
-  document.getElementById("loginAdmin").addEventListener("click", async () => {
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error(error);
-      alert("No se pudo iniciar sesión: " + error.message);
-    }
-  });
+  const loginButton = document.getElementById("loginAdmin");
+  const status = document.getElementById("adminStatus");
 
-  onAuthStateChanged(auth, (user) => {
-    const status = document.getElementById("adminStatus");
+  if (loginButton && status) {
+    loginButton.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        console.error("Error al iniciar sesión:", error);
+        alert("No se pudo iniciar sesión: " + error.message);
+      }
+    });
 
-    if (user) {
-      status.textContent = "Sesión iniciada: " + user.email;
-      console.log("UID de administrador:", user.uid);
-    } else {
-      status.textContent = "Modo espectador";
-    }
-  });
+    onAuthStateChanged(auth, (user) => {
+      status.textContent = user
+        ? "Sesión iniciada: " + (user.email || "Administrador")
+        : "Modo espectador";
+
+      if (user) {
+        console.log("UID de la cuenta:", user.uid);
+      }
+    });
+  }
 
   const estadoRef = ref(db, "watchparty");
 
-  onValue(estadoRef, (snapshot) => {
-    const estado = snapshot.val();
-    if (!estado) return;
-
-    console.log("Estado compartido recibido:", estado);
-  });
+  onValue(
+    estadoRef,
+    (snapshot) => {
+      console.log("Estado compartido:", snapshot.val());
+    },
+    (error) => {
+      console.error("Error al leer Firebase:", error.message);
+    }
+  );
 </script>
 </body>
-</https://animeflv.or> 
+</html>
