@@ -197,14 +197,22 @@
   const videoUrlRef = ref(db, "watchparty/videoUrl");
   const inputUrl = document.getElementById("url");
 
-  onValue(videoUrlRef, (snapshot) => {
+  onValue(
+  videoUrlRef,
+  (snapshot) => {
     const url = snapshot.val();
+
+    console.log("Firebase respondió. URL recibida:", url);
 
     if (url && inputUrl && inputUrl.value !== url) {
       inputUrl.value = url;
       cargarHLS(url);
     }
-  });
+  },
+  (error) => {
+    console.error("Error al leer Firebase:", error);
+  }
+);
 
   onAuthStateChanged(auth, (user) => {
     console.log(user ? "Sesión iniciada" : "Sin sesión iniciada");
