@@ -289,6 +289,24 @@ function cargarHLS(direccion) {
   onAuthStateChanged(auth, (user) => {
     console.log(user ? "Sesión iniciada" : "Sin sesión iniciada");
   });
+video.addEventListener("playing", () => {
+  estado.textContent = "Reproduciendo video.";
+});
+
+video.addEventListener("waiting", () => {
+  estado.textContent = "Esperando datos del video...";
+});
+
+video.addEventListener("pause", () => {
+  if (!video.ended && video.currentTime > 0) {
+    estado.textContent = "Video pausado.";
+  }
+});
+
+video.addEventListener("error", () => {
+  estado.textContent =
+    "Error de reproducción. Revisá la conexión o la fuente.";
+});
 </script>
 </body>
 </html>
