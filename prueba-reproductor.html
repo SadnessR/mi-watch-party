@@ -167,5 +167,48 @@
       }
     };
   </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    onValue,
+    set
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import {
+    getAuth,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDZq0EfZNPCn_gTJIu61pxAGRDpOYvDvkA",
+    authDomain: "mi-watch-party.firebaseapp.com",
+    databaseURL: "https://mi-watch-party-default-rtdb.firebaseio.com",
+    projectId: "mi-watch-party",
+    appId: "1:854788364639:web:74f134423e5d3142b6beea",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  const videoUrlRef = ref(db, "watchparty/videoUrl");
+  const inputUrl = document.getElementById("url");
+
+  onValue(videoUrlRef, (snapshot) => {
+    const url = snapshot.val();
+
+    if (url && inputUrl && inputUrl.value !== url) {
+      inputUrl.value = url;
+      cargarHLS(url);
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    console.log(user ? "Sesión iniciada" : "Sin sesión iniciada");
+  });
+</script>
 </body>
 </html>
