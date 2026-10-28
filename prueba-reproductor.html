@@ -104,45 +104,117 @@
 
     let hls = null;
 
-    function cargarHLS(direccion) {
-      if (hls) {
-        hls.destroy();
-        hls = null;
-      }
+function cargarHLS(direccion) {
+  // Cancelar cualquier carga anterior
+  if (hls) {
+    hls.destroy();
+    hls = null;
+  }
 
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
+  const url = direccion.trim();
 
-      estado.textContent = "Cargando fuente...";
+  // Validar que se haya ingresado una URL
+  if (!url) {
+    estado.textContent = "Ingresá una URL de video HLS.";
+    return;
+  }
 
-      if (Hls.isSupported()) {
-        hls = new Hls();
-        hls.loadSource(direccion);
-        hls.attachMedia(video);
+  // Validar formato de la dirección
+  let urlValidada;
 
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+  try {
+    urlValidada = new URL(url);
+  } catch {
+    estado.textContent = "La URL no es válida. Revisá el enlace.";
+    return;
+  }
+
+  if (!["http:", "https:"].includes(urlValidada.protocol)) {
+    estado.textContent = "La URL debe comenzar con http:// o https://.";
+    return;
+  }
+
+  video.pause();
+  video.removeAttribute("src");
+  video.load();
+
+  estado.textContent = "Conectando con la fuente de video...";
+
+  if (Hls.isSupported()) {
+    hls = new Hls({
+      manifestLoadingTimeOut: 15000,
+      manifestLoadingMaxRetry: 2,
+      levelLoadingTimeOut: 15000,
+      fragLoadingTimeOut: 20000
+    });
+
+    hls.on(Hls.Events.ERROR, (event, data) => {
+      if (!data.fatal) return;
+
+      switch (data.type) {
+        case Hls.ErrorTypes.NETWORK_ERROR:
           estado.textContent =
-            "Fuente cargada. Presioná Play para reproducir.";
-        });
+            "Error de conexión. El servidor puede estar caído, bloquear el acceso o no permitir CORS.";
+          break;
 
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          if (data.fatal) {
-            estado.textContent =
-              "Error al cargar el video: " + data.type +
-              ". Revisá la fuente o la consola.";
-          }
-        });
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = direccion;
-        estado.textContent =
-          "Fuente cargada. Presioná Play para reproducir.";
-      } else {
-        estado.textContent =
-          "Este navegador no admite HLS en este reproductor.";
+        case Hls.ErrorTypes.MEDIA_ERROR:
+          estado.textContent =
+            "Error al procesar el video. La fuente podría tener un formato incompatible.";
+          break;
+
+        default:
+          estado.textContent =
+            "No se pudo cargar esta fuente. Revisá la URL y los permisos del servidor.";
+          break;
       }
-    }
 
+      console.error("Error HLS:", {
+        type: data.type,
+        details: data.details,
+        fatal: data.fatal,
+        url: urlValidada.href
+      });
+
+      if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+        hls.recoverMediaError();
+      } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+        hls.startLoad();
+      }
+    });
+
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      estado.textContent =
+        "¡Fuente cargada! Presioná Play para reproducir.";
+    });
+
+    hls.on(Hls.Events.MEDIA_ATTACHED, () => {
+      estado.textContent = "Reproductor conectado. Cargando video...";
+    });
+
+    hls.loadSource(urlValidada.href);
+    hls.attachMedia(video);
+
+  } else if (
+    video.canPlayType("application/vnd.apple.mpegurl")
+  ) {
+    video.src = urlValidada.href;
+
+    video.onloadedmetadata = () => {
+      estado.textContent =
+        "¡Fuente cargada! Presioná Play para reproducir.";
+    };
+
+    video.onerror = () => {
+      estado.textContent =
+        "No se pudo reproducir la fuente. Puede ser un problema de conexión, formato o permisos.";
+      console.error("Error del reproductor nativo:", video.error);
+    };
+
+  } else {
+    estado.textContent =
+      "Este navegador no admite HLS en este reproductor.";
+  }
+}
     document.getElementById("cargar").onclick = () => {
       const demo =
         "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
