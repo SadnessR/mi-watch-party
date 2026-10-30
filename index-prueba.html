@@ -88,9 +88,17 @@
     id="videoPlayer"
     controls
     playsinline
-    style="width:100%; height:100%; object-fit:contain; background:#000;"
+    style="display:none;"
   ></video>
-</div>       
+
+  <iframe
+    id="zillaFrame"
+    src=""
+    allow="autoplay; fullscreen"
+    allowfullscreen
+    style="width:100%; height:100%; border:0; background:#000;"
+  ></iframe>
+</div>      
  <div class="below">
           Usá únicamente contenido propio, de dominio público o con autorización/licencia que permita la reproducción e inserción en una web.
         </div>
@@ -394,7 +402,7 @@ onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
   actualizandoDesdeFirebase = true;
   videoUrl.value = enlace;
 
-  reproducirHLS(enlace);
+ document.getElementById("zillaFrame").src = enlace;
 
   actualizandoDesdeFirebase = false;
 }, (error) => {
