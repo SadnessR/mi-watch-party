@@ -311,7 +311,9 @@ videoPlayer.addEventListener("pause", async () => {
         throw new Error("Enlace no válido");
       }
 
-      await set(ref(db, "watchparty/videoUrl"), url.href);
+     await set(videoTimeRef, 0);
+    await set(ref(db, "watchparty/videoUrl"), url.href);
+      
     } catch (error) {
       alert("No se pudo guardar el enlace. Revisá la URL y las reglas de Firebase.");
       console.error(error);
