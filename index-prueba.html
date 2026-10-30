@@ -214,6 +214,38 @@ const videoTimeRef = ref(db, "watchparty/videoTime");
 
 let ultimoEnvioTiempo = 0;
 let tiempoPendiente = null;
+  // Los espectadores reciben la posición del administrador.
+let tiempoCompartido = null;
+let sincronizacionAplicada = false;
+
+function aplicarTiempoCompartido() {
+  if (soyAdmin || sincronizacionAplicada) return;
+  if (tiempoCompartido === null) return;
+  if (videoPlayer.readyState < 1) return;
+
+  videoPlayer.currentTime = tiempoCompartido;
+  sincronizacionAplicada = true;
+
+  console.log("Reproducción sincronizada:", tiempoCompartido);
+}
+
+// Recibir la posición guardada en Firebase.
+onValue(videoTimeRef, (snapshot) => {
+  const tiempo = snapshot.val();
+
+  if (typeof tiempo !== "number" || !Number.isFinite(tiempo)) return;
+
+  tiempoCompartido = tiempo;
+  aplicarTiempoCompartido();
+
+}, (error) => {
+  console.error("Error al recibir el tiempo:", error);
+});
+
+// Esperar a que el video esté preparado.
+videoPlayer.addEventListener("loadedmetadata", () => {
+  aplicarTiempoCompartido();
+});
   // El administrador comparte su posición de reproducción.
 videoPlayer.addEventListener("timeupdate", async () => {
   if (!soyAdmin || videoPlayer.paused) return;
