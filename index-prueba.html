@@ -229,13 +229,8 @@ function aplicarTiempoCompartido() {
 
   sincronizacionAplicada = true;
 
-  videoPlayer.play().catch((error) => {
-    console.error("No se pudo iniciar la reproducción automática:", error);
-  });
-
-  console.log("Reproducción sincronizada:", tiempoCompartido);
+  console.log("Posición sincronizada:", tiempoCompartido);
 }
-
 // Recibir y corregir continuamente la posición del administrador.
 onValue(videoTimeRef, (snapshot) => {
   const tiempo = snapshot.val();
@@ -379,7 +374,8 @@ videoPlayer.addEventListener("seeked", async () => {
         throw new Error("Enlace no válido");
       }
 
-     await set(videoTimeRef, 0);
+    await set(videoStateRef, false);
+    await set(videoTimeRef, 0);
     await set(ref(db, "watchparty/videoUrl"), url.href);
       
     } catch (error) {
