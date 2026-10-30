@@ -209,6 +209,38 @@ function cargarArchivo(event) {
 
   let soyAdmin = false;
   let actualizandoDesdeFirebase = false;
+  const videoPlayer = document.getElementById("videoPlayer");
+const videoTimeRef = ref(db, "watchparty/videoTime");
+
+let ultimoEnvioTiempo = 0;
+let tiempoPendiente = null;
+  // El administrador comparte su posición de reproducción.
+videoPlayer.addEventListener("timeupdate", async () => {
+  if (!soyAdmin || videoPlayer.paused) return;
+
+  const ahora = Date.now();
+
+  if (ahora - ultimoEnvioTiempo < 3000) return;
+
+  ultimoEnvioTiempo = ahora;
+
+  try {
+    await set(videoTimeRef, videoPlayer.currentTime);
+  } catch (error) {
+    console.error("Error al compartir el tiempo:", error);
+  }
+});
+
+// Comparte la posición exacta cuando el administrador pausa.
+videoPlayer.addEventListener("pause", async () => {
+  if (!soyAdmin) return;
+
+  try {
+    await set(videoTimeRef, videoPlayer.currentTime);
+  } catch (error) {
+    console.error("Error al guardar la posición:", error);
+  }
+});
 
   loginButton.addEventListener("click", async () => {
     try {
