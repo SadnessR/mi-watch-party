@@ -323,6 +323,8 @@ onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
   const enlace = snapshot.val();
   if (!enlace) return;
 
+  sincronizacionAplicada = false;
+  
   actualizandoDesdeFirebase = true;
   videoUrl.value = enlace;
 
