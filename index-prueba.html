@@ -236,14 +236,24 @@ function aplicarTiempoCompartido() {
   console.log("Reproducción sincronizada:", tiempoCompartido);
 }
 
-// Recibir la posición guardada en Firebase.
+// Recibir y corregir continuamente la posición del administrador.
 onValue(videoTimeRef, (snapshot) => {
   const tiempo = snapshot.val();
 
   if (typeof tiempo !== "number" || !Number.isFinite(tiempo)) return;
 
   tiempoCompartido = tiempo;
-  aplicarTiempoCompartido();
+
+  if (soyAdmin || videoPlayer.readyState < 1) return;
+
+  const diferencia = Math.abs(videoPlayer.currentTime - tiempo);
+
+  // Corregir si es la primera sincronización
+  // o si existe una diferencia superior a 2 segundos.
+  if (!sincronizacionAplicada || diferencia > 2) {
+    videoPlayer.currentTime = tiempo;
+    sincronizacionAplicada = true;
+  }
 
 }, (error) => {
   console.error("Error al recibir el tiempo:", error);
