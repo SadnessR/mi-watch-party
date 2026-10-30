@@ -210,7 +210,8 @@ function cargarArchivo(event) {
   let soyAdmin = false;
   let actualizandoDesdeFirebase = false;
   const videoPlayer = document.getElementById("videoPlayer");
-const videoTimeRef = ref(db, "watchparty/videoTime");
+  const videoTimeRef = ref(db, "watchparty/videoTime");
+  const videoStateRef = ref(db, "watchparty/videoState");
 
 let ultimoEnvioTiempo = 0;
 let tiempoPendiente = null;
