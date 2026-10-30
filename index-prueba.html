@@ -248,6 +248,25 @@ onValue(videoTimeRef, (snapshot) => {
 }, (error) => {
   console.error("Error al recibir el tiempo:", error);
 });
+  // Recibir las pausas y reanudaciones del administrador.
+onValue(videoStateRef, (snapshot) => {
+  if (soyAdmin) return;
+
+  const reproduciendo = snapshot.val();
+
+  if (typeof reproduciendo !== "boolean") return;
+
+  if (reproduciendo) {
+    videoPlayer.play().catch((error) => {
+      console.error("No se pudo reanudar el video:", error);
+    });
+  } else {
+    videoPlayer.pause();
+  }
+
+}, (error) => {
+  console.error("Error al recibir el estado del video:", error);
+});
 
 // Esperar a que el video esté preparado.
 videoPlayer.addEventListener("loadedmetadata", () => {
