@@ -408,6 +408,10 @@ onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
 }, (error) => {
   console.error("Error al leer Firebase:", error.message);
 });
+// Prueba de comunicación con el reproductor Zilla.
+window.addEventListener("message", (event) => {
+  console.log("Mensaje recibido de Zilla:", event.origin, event.data);
+});
 </script>
 </body>
 </html>
