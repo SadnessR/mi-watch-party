@@ -83,15 +83,14 @@
     Modo espectador
   </span>
 </div>
-  <div class="player-wrap" id="player">
-  <iframe
-    id="videoFrame"
-    src="https://animeflv.or.at/2026/09/02/rezero-kara-hajimeru-isekai-seikatsu-4th-season-episodio-15/"
-    allowfullscreen
-    referrerpolicy="strict-origin-when-cross-origin"
-    style="width:100%; height:100%; border:0;"
-  ></iframe>
-</div>        
+<div class="player-wrap" id="player">
+  <video
+    id="videoPlayer"
+    controls
+    playsinline
+    style="width:100%; height:100%; object-fit:contain; background:#000;"
+  ></video>
+</div>       
  <div class="below">
           Usá únicamente contenido propio, de dominio público o con autorización/licencia que permita la reproducción e inserción en una web.
         </div>
@@ -116,35 +115,44 @@
       https://animeflv.or.at/2026/09/02/rezero-kara-hajimeru-isekai-seikatsu-4th-season-episodio-15/
     </footer>
   </main>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.13"></script>
 <script>
-function cargarVideo() {
-  const campo = document.getElementById("videoUrl");
-  const enlace = campo.value.trim();
+window.reproducirHLS = function(enlace) {
+  const video = document.getElementById("videoPlayer");
 
-  if (!enlace) {
-    alert("Pegá primero el enlace del video.");
-    return;
+  if (!enlace) return;
+
+  video.pause();
+
+  if (window.hlsPlayer) {
+    window.hlsPlayer.destroy();
+    window.hlsPlayer = null;
   }
 
-  try {
-    const url = new URL(enlace);
+  video.removeAttribute("src");
+  video.load();
 
-    if (url.protocol !== "https:" && url.protocol !== "http:") {
-      alert("Ingresá un enlace web válido.");
-      return;
-    }
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    window.hlsPlayer = hls;
 
-    document.getElementById("videoFrame").src = url.href;
-  } catch (error) {
-    alert("El enlace no parece válido. Revisalo e intentá de nuevo.");
+    hls.loadSource(enlace);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, function() {
+      console.log("Manifiesto HLS cargado correctamente.");
+    });
+
+    hls.on(Hls.Events.ERROR, function(event, data) {
+      console.error("Error HLS:", data);
+    });
+
+  } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.src = enlace;
+  } else {
+    console.error("Este navegador no admite reproducción HLS.");
   }
-}
-
-document.getElementById("videoUrl").addEventListener("keydown", function(event) {
-  if (event.key === "Enter") {
-    cargarVideo();
-  }
-});
+};
 </script>
 <script>
 function cargarArchivo(event) {
@@ -193,7 +201,7 @@ function cargarArchivo(event) {
   const loginButton = document.getElementById("loginAdmin");
   const status = document.getElementById("adminStatus");
   const videoUrl = document.getElementById("videoUrl");
-  const videoFrame = document.getElementById("videoFrame");
+ 
 
   // IMPORTANTE: completar con el UID de tu cuenta de Google,
   // que aparece en la consola después de iniciar sesión.
@@ -246,18 +254,20 @@ function cargarArchivo(event) {
     }
   };
 
-  // Todos reciben el enlace actualizado.
-  onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
-    const enlace = snapshot.val();
-    if (!enlace) return;
+ // Todos reciben el enlace actualizado.
+onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
+  const enlace = snapshot.val();
+  if (!enlace) return;
 
-    actualizandoDesdeFirebase = true;
-    videoUrl.value = enlace;
-    videoFrame.src = enlace;
-    actualizandoDesdeFirebase = false;
-  }, (error) => {
-    console.error("Error al leer Firebase:", error.message);
-  });
+  actualizandoDesdeFirebase = true;
+  videoUrl.value = enlace;
+
+  reproducirHLS(enlace);
+
+  actualizandoDesdeFirebase = false;
+}, (error) => {
+  console.error("Error al leer Firebase:", error.message);
+});
 </script>
 </body>
 </html>
