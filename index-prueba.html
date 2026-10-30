@@ -224,7 +224,13 @@ function aplicarTiempoCompartido() {
   if (videoPlayer.readyState < 1) return;
 
   videoPlayer.currentTime = tiempoCompartido;
+  videoPlayer.muted = true;
+
   sincronizacionAplicada = true;
+
+  videoPlayer.play().catch((error) => {
+    console.error("No se pudo iniciar la reproducción automática:", error);
+  });
 
   console.log("Reproducción sincronizada:", tiempoCompartido);
 }
