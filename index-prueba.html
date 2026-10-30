@@ -418,12 +418,12 @@ window.probarPauseZilla = function() {
   const frame = document.getElementById("zillaFrame");
   frame.contentWindow.postMessage("pause", "*");
 };
-  window.addEventListener("message", (event) => {
-  const zillaFrame = document.getElementById("zillaFrame");
+window.addEventListener("message", (event) => {
+  const frame = document.getElementById("zillaFrame");
 
-  if (event.source !== zillaFrame.contentWindow) return;
+  if (event.source !== frame.contentWindow) return;
 
-  console.log("Mensaje REAL del iframe Zilla:", event.origin, event.data);
+  console.log("Mensaje del reproductor:", event.origin, event.data);
 });
 </script>
 </body>
