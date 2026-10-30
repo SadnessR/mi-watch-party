@@ -289,6 +289,38 @@ videoPlayer.addEventListener("pause", async () => {
       alert("Error al iniciar sesión: " + error.message);
     }
   });
+  // Compartir cuando el administrador inicia la reproducción.
+videoPlayer.addEventListener("play", async () => {
+  if (!soyAdmin) return;
+
+  try {
+    await set(videoStateRef, true);
+  } catch (error) {
+    console.error("Error al compartir la reproducción:", error);
+  }
+});
+
+// Compartir cuando el administrador pausa.
+videoPlayer.addEventListener("pause", async () => {
+  if (!soyAdmin) return;
+
+  try {
+    await set(videoStateRef, false);
+  } catch (error) {
+    console.error("Error al compartir la pausa:", error);
+  }
+});
+
+// Compartir cuando el administrador adelanta o retrocede.
+videoPlayer.addEventListener("seeked", async () => {
+  if (!soyAdmin) return;
+
+  try {
+    await set(videoTimeRef, videoPlayer.currentTime);
+  } catch (error) {
+    console.error("Error al compartir el cambio de posición:", error);
+  }
+});
 
   onAuthStateChanged(auth, (user) => {
     soyAdmin = !!user && user.uid === ADMIN_UID;
