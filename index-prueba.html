@@ -88,17 +88,9 @@
     id="videoPlayer"
     controls
     playsinline
-    style="display:none;"
+    style="width:100%; height:100%; object-fit:contain; background:#000;"
   ></video>
-
-  <iframe
-    id="zillaFrame"
-    src=""
-    allow="autoplay; fullscreen"
-    allowfullscreen
-    style="width:100%; height:100%; border:0; background:#000;"
-  ></iframe>
-</div>      
+</div>     
  <div class="below">
           Usá únicamente contenido propio, de dominio público o con autorización/licencia que permita la reproducción e inserción en una web.
         </div>
@@ -402,28 +394,11 @@ onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
   actualizandoDesdeFirebase = true;
   videoUrl.value = enlace;
 
- document.getElementById("zillaFrame").src = enlace;
+reproducirHLS(enlace);
 
   actualizandoDesdeFirebase = false;
 }, (error) => {
   console.error("Error al leer Firebase:", error.message);
-});
-// Prueba de comunicación con el reproductor Zilla.
-window.probarPlayZilla = function() {
-  const frame = document.getElementById("zillaFrame");
-  frame.contentWindow.postMessage("play", "*");
-};
-
-window.probarPauseZilla = function() {
-  const frame = document.getElementById("zillaFrame");
-  frame.contentWindow.postMessage("pause", "*");
-};
-window.addEventListener("message", (event) => {
-  const frame = document.getElementById("zillaFrame");
-
-  if (event.source !== frame.contentWindow) return;
-
-  console.log("Mensaje del reproductor:", event.origin, event.data);
 });
 </script>
 </body>
