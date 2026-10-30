@@ -409,7 +409,16 @@ onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
   console.error("Error al leer Firebase:", error.message);
 });
 // Prueba de comunicación con el reproductor Zilla.
-window.addEventListener("message", (event) => {
+window.probarPlayZilla = function() {
+  const frame = document.getElementById("zillaFrame");
+  frame.contentWindow.postMessage("play", "*");
+};
+
+window.probarPauseZilla = function() {
+  const frame = document.getElementById("zillaFrame");
+  frame.contentWindow.postMessage("pause", "*");
+};
+  window.addEventListener("message", (event) => {
   const zillaFrame = document.getElementById("zillaFrame");
 
   if (event.source !== zillaFrame.contentWindow) return;
