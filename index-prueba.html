@@ -1,1 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101010">
+  <title>Mi Watch Party</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101010; --panel:#1b1b1b; --line:#303030; --accent:#53fc18; --text:#f4f4f4; --muted:#aaa; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:16px clamp(16px,3vw,36px); border-bottom:1px solid var(--line); background:#151515; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.04em; }
+    .dot { width:12px; height:12px; border-radius:50%; background:var(--accent); box-shadow:0 0 16px #53fc1840; }
+    .tag { color:var(--muted); font-size:.85rem; }
+    main { width:min(1500px,100%); margin:auto; padding:22px; }
+    .layout { display:grid; grid-template-columns:minmax(0,1fr) 350px; gap:18px; align-items:stretch; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; min-width:0; }
+    .panel-head { padding:13px 16px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    h1 { font-size:1.25rem; margin:0; }
+    h2 { font-size:1rem; margin:0; }
+    .player-wrap { aspect-ratio:16/9; background:#080808; display:flex; align-items:center; justify-content:center; }
+    .player-wrap iframe { width:100%; height:100%; border:0; }
+    .placeholder { padding:24px; max-width:520px; text-align:center; color:var(--muted); }
+    .placeholder strong { display:block; color:var(--text); margin-bottom:8px; }
+    .below { padding:16px; color:var(--muted); font-size:.92rem; }
+    .chat-frame { width:100%; height:680px; border:0; display:block; background:#111; }
+    .status { font-size:.78rem; border:1px solid #3a6331; color:var(--accent); border-radius:999px; padding:3px 9px; white-space:nowrap; }
+    footer { color:#8f8f8f; font-size:.8rem; padding:20px 4px 4px; }
+    a { color:var(--accent); }
+    @media (max-width: 900px) {
+      main { padding:14px; }
+      .layout { grid-template-columns:1fr; }
+      .chat-frame { height:520px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span class="dot"></span><span>MI WATCH PARTY</span></div>
+    <span class="tag">Video + comunidad</span>
+  </header>
 
+  <main>
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <h1>Reproductor</h1>
+          <span class="status">SALA PÚBLICA</span>
+        </div>
+        
+<div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+  <input
+    id="videoUrl"
+    type="url"
+    placeholder="Pegá el enlace de la película o anime"
+    style="flex:1; min-width:220px; padding:12px; border-radius:8px; border:1px solid #444; background:#202020; color:white;"
+  >
+  <button
+    type="button"
+    onclick="cargarVideo()"
+    style="padding:12px 18px; border:0; border-radius:8px; background:#53FC18; color:#111; font-weight:bold; cursor:pointer;"
+  >
+    Cargar video
+  </button>
+</div>
+<div style="margin-bottom:12px; color:white;">
+  <label for="archivoVideo">O elegí un video de tu PC:</label>
+  <input
+    id="archivoVideo"
+    type="file"
+    accept="video/*"
+    onchange="cargarArchivo(event)"
+    style="display:block; margin-top:8px; max-width:100%;"
+  >
+</div>
+<div style="margin: 12px 0; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+  <button id="loginAdmin"
+    style="padding:10px 14px; border:0; border-radius:8px; background:#53FC18; color:#111; font-weight:bold; cursor:pointer;">
+    Iniciar sesión como administrador
+  </button>
+  <span id="adminStatus" style="color:white;">
+    Modo espectador
+  </span>
+</div>
+  <div class="player-wrap" id="player">
+  <iframe
+    id="videoFrame"
+    src="https://animeflv.or.at/2026/09/02/rezero-kara-hajimeru-isekai-seikatsu-4th-season-episodio-15/"
+    allowfullscreen
+    referrerpolicy="strict-origin-when-cross-origin"
+    style="width:100%; height:100%; border:0;"
+  ></iframe>
+</div>        
+ <div class="below">
+          Usá únicamente contenido propio, de dominio público o con autorización/licencia que permita la reproducción e inserción en una web.
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <h2>Chat de Kick</h2>
+          <a href="https://kick.com/SadnessR" target="_blank" rel="noopener noreferrer">Abrir canal ↗</a>
+        </div>
+        <!-- SadnessR. -->
+        <iframe
+          class="chat-frame"
+          src="https://chat.kick.cx/embed/SadnessR"
+          title="Chat de Kick"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin">
+        </iframe>
+      </aside>
+    </div>
+    <footer>
+      https://animeflv.or.at/2026/09/02/rezero-kara-hajimeru-isekai-seikatsu-4th-season-episodio-15/
+    </footer>
+  </main>
+<script>
+function cargarVideo() {
+  const campo = document.getElementById("videoUrl");
+  const enlace = campo.value.trim();
+
+  if (!enlace) {
+    alert("Pegá primero el enlace del video.");
+    return;
+  }
+
+  try {
+    const url = new URL(enlace);
+
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      alert("Ingresá un enlace web válido.");
+      return;
+    }
+
+    document.getElementById("videoFrame").src = url.href;
+  } catch (error) {
+    alert("El enlace no parece válido. Revisalo e intentá de nuevo.");
+  }
+}
+
+document.getElementById("videoUrl").addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    cargarVideo();
+  }
+});
+</script>
+<script>
+function cargarArchivo(event) {
+  const archivo = event.target.files[0];
+
+  if (!archivo) return;
+
+  const reproductor = document.getElementById("player");
+  reproductor.innerHTML = "";
+
+  const video = document.createElement("video");
+  video.controls = true;
+  video.autoplay = true;
+  video.style.width = "100%";
+  video.style.height = "100%";
+  video.style.objectFit = "contain";
+  video.src = URL.createObjectURL(archivo);
+
+  reproductor.appendChild(video);
+}
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import {
+    getDatabase, ref, onValue, set
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDZq0EfZNPCn_gTJIu61pxAGRDpOYvDvkA",
+    authDomain: "mi-watch-party.firebaseapp.com",
+    databaseURL: "https://mi-watch-party-default-rtdb.firebaseio.com",
+    projectId: "mi-watch-party",
+    storageBucket: "mi-watch-party.firebasestorage.app",
+    messagingSenderId: "854788364639",
+    appId: "1:854788364639:web:74f134423e5d3142b6beea",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const loginButton = document.getElementById("loginAdmin");
+  const status = document.getElementById("adminStatus");
+  const videoUrl = document.getElementById("videoUrl");
+  const videoFrame = document.getElementById("videoFrame");
+
+  // IMPORTANTE: completar con el UID de tu cuenta de Google,
+  // que aparece en la consola después de iniciar sesión.
+  const ADMIN_UID =  "E4cMAStotJdHdWLXUZ3JAAWG06q1";
+
+  let soyAdmin = false;
+  let actualizandoDesdeFirebase = false;
+
+  loginButton.addEventListener("click", async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error(error);
+      alert("Error al iniciar sesión: " + error.message);
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    soyAdmin = !!user && user.uid === ADMIN_UID;
+
+    status.textContent = !user
+      ? "Modo espectador"
+      : soyAdmin
+        ? "Administrador"
+        : "Sesión iniciada sin permisos de administrador";
+
+    videoUrl.disabled = !soyAdmin;
+    document.querySelector('button[onclick="cargarVideo()"]').disabled = !soyAdmin;
+  });
+
+  // El administrador guarda el enlace compartido.
+  window.cargarVideo = async function () {
+    const enlace = videoUrl.value.trim();
+
+    if (!soyAdmin) {
+      alert("Solo el administrador puede cambiar el video.");
+      return;
+    }
+
+    try {
+      const url = new URL(enlace);
+      if (!["https:", "http:"].includes(url.protocol)) {
+        throw new Error("Enlace no válido");
+      }
+
+      await set(ref(db, "watchparty/videoUrl"), url.href);
+    } catch (error) {
+      alert("No se pudo guardar el enlace. Revisá la URL y las reglas de Firebase.");
+      console.error(error);
+    }
+  };
+
+  // Todos reciben el enlace actualizado.
+  onValue(ref(db, "watchparty/videoUrl"), (snapshot) => {
+    const enlace = snapshot.val();
+    if (!enlace) return;
+
+    actualizandoDesdeFirebase = true;
+    videoUrl.value = enlace;
+    videoFrame.src = enlace;
+    actualizandoDesdeFirebase = false;
+  }, (error) => {
+    console.error("Error al leer Firebase:", error.message);
+  });
+</script>
+</body>
+</html>
